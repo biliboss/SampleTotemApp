@@ -7,10 +7,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,8 +23,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // ADDED These lines
-        getWindow().addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY); //(dont forget to add flag before `setContentView`)
-        disableLock();
+//        getWindow().addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY); //(dont forget to add flag before `setContentView`)
+//        disableLock();
 
 
         setContentView(R.layout.activity_main);
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "Hi", Toast.LENGTH_LONG);
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
@@ -53,6 +58,10 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(Intent.createChooser(intent, "Exit"));
             return true;
         }
 
@@ -61,14 +70,21 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onUserLeaveHint() {
-        startActivity(new Intent(MainActivity.this, MainActivity.class));
-        finish();
+//        startActivity(new Intent(MainActivity.this, MainActivity.class));
+//        finish();
         super.onUserLeaveHint();
     }
 
-    private void disableLock() {
-        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(MainActivity.KEYGUARD_SERVICE);
-        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(KEYGUARD_SERVICE);
-        lock.disableKeyguard();
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Log.i(MainActivity.class.getSimpleName(), String.format("onKeyDown %d", keyCode));
+        if (keyCode == KeyEvent.KEYCODE_POWER) {
+            Window window = this.getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+            window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }
